@@ -1,0 +1,11 @@
+flask
+numpy
+torch
+scikit-learn
+transformers
+faiss-cpu
+python-Levenshtein
+bert-score
+datasets
+sentence-transformers
+gunicorn

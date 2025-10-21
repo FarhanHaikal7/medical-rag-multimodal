@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Query and Image Captioning</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      background-color: #0e1a25;
+      color: #d1e9f2;
+      font-family: "Roboto", sans-serif;
+    }
+
+    .navbar {
+      background-color: #1e2e3b;
+    }
+
+    .navbar-brand {
+      color: #67d3c2;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.5rem;
+    }
+
+    .navbar-nav .nav-link {
+      color: #d1e9f2;
+    }
+
+    .navbar-nav .nav-link:hover {
+      color: #67d3c2;
+    }
+
+    .header-title {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .header-title h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 3.5rem;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+
+    .header-title p {
+      font-size: 1.5rem;
+      margin-top: 10px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    h2 {
+      color: #67d3c2;
+      margin-top: 30px;
+    }
+
+    .card {
+      background-color: #1e2e3b;
+      border: none;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .metrics-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .metrics-list li {
+      margin-bottom: 0.25rem;
+    }
+
+    footer {
+      background-color: #1e2e3b;
+      padding: 20px 0;
+      color: #d1e9f2;
+      text-align: center;
+    }
+
+    footer a {
+      color: #67d3c2;
+      margin: 0 10px;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="#">AI Medical Assistant</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#querySection">Ask a Question</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#imageSection">Upload Image</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-title">
+    <h1 id="mainTitle">AI Medical Assistant</h1>
+    <p>Your intelligent partner for medical queries and image captioning.</p>
+  </div>
+
+  <div class="container mt-5">
+    <h2>Select Mode:</h2>
+    <div class="mb-4">
+      <select id="modeSelect" class="form-select" aria-label="Select Mode">
+        <option value="query" selected>Ask a Question</option>
+        <option value="caption">Upload Image</option>
+      </select>
+    </div>
+
+    <div id="questionSection" class="card p-4">
+      <h2>Ask a Question</h2>
+      <form id="queryForm" autocomplete="off">
+        <div class="mb-3">
+          <label for="query" class="form-label">Your Question</label>
+          <input type="text" class="form-control" id="query" placeholder="Enter your question here" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <div id="queryResult" class="mt-3"></div>
+    </div>
+
+    <div id="imageSection" class="card p-4" style="display: none;">
+  <h2>Visual Question Answering</h2>
+  <form id="captionForm" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="image" class="form-label">Upload Image</label>
+      <input type="file" class="form-control" id="image" accept="image/*" required />
+    </div>
+    <div class="mb-3">
+      <label for="imageQuestion" class="form-label">Enter a Question</label>
+      <input type="text" class="form-control" id="imageQuestion" placeholder="e.g. What abnormality is visible?" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Get Answer</button>
+  </form>
+
+  <div id="captionResult" class="mt-3"></div>  <!-- Add this div -->
+
+</div>
+
+
+
+
+
+    <div id="feedbackSection" class="card p-4 mt-4" style="display: none;">
+      <h2>Feedback</h2>
+      <form id="feedbackForm" autocomplete="off">
+        <div class="mb-3">
+          <label for="correctedAnswer" class="form-label">Your Corrected Answer</label>
+          <textarea class="form-control" id="correctedAnswer" rows="3" placeholder="Enter your corrected answer here" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Submit Feedback</button>
+      </form>
+      <button id="retrainButton" class="btn btn-warning mt-3">Retrain Model</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2023 AI Medical Assistant. All rights reserved.</p>
+      <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+      <div>
+        <a href="#" class="fab fa-facebook-f"></a>
+        <a href="#" class="fab fa-twitter"></a>
+        <a href="#" class="fab fa-linkedin-in"></a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    $(document).ready(function () {
+      $("#modeSelect").on("change", function () {
+        const mode = $(this).val();
+        if (mode === "query") {
+          $("#questionSection").show();
+          $("#imageSection").hide();
+          $("#feedbackSection").hide();
+          $("#captionResult").empty();
+          $("#captionForm")[0].reset();
+        } else {
+          $("#questionSection").hide();
+          $("#imageSection").show();
+          $("#queryResult").empty();
+          $("#feedbackSection").hide();
+          $("#queryForm")[0].reset();
+        }
+      });
+
+      // QA submit
+      $("#queryForm").on("submit", function (e) {
+        e.preventDefault();
+        $("#mainTitle").hide(); // Hide the title
+        $("#queryResult").html("<p>Generating...</p>");
+        const query = $("#query").val();
+        $.ajax({
+          url: "/query",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ query }),
+          success: function (response) {
+            const { generated_answer, reference_answer, lev_similarity, cosine_similarity, precision, recall, f1_score } = response;
+            $("#queryResult").html(`
+              <h4>Generated Answer:</h4>
+              <p>${generated_answer}</p>
+              <h4>Reference Answer:</h4>
+              <p>${reference_answer}</p>
+              <h4>Metrics:</h4>
+              <ul class="metrics-list">
+                  <li>Levenshtein Similarity: ${lev_similarity}</li>
+                  <li>Cosine Similarity: ${cosine_similarity}</li>
+                  <li>Precision: ${precision}</li>
+                  <li>Recall: ${recall}</li>
+                  <li>F1 Score: ${f1_score}</li>
+              </ul>
+            `);
+            $("#feedbackSection").show();
+            $("#feedbackForm")[0].reset();
+          },
+          error: function () {
+            $("#queryResult").html('<p class="text-danger">Error processing your request.</p>');
+          },
+        });
+      });
+
+      // Caption submit
+$("#captionForm").on("submit", function (e) {
+  e.preventDefault();
+  $("#mainTitle").hide();
+  $("#captionResult").html("<p>Generating...</p>");
+
+  const formData = new FormData();
+  const fileInput = $('#image')[0].files[0];
+  const question = $('#imageQuestion').val();
+
+  formData.append('image', fileInput);
+  formData.append('question', question);
+
+          $.ajax({
+            url: "/caption",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+              const { generated_caption, reference_answer, lev_similarity, cosine_similarity, precision, recall, f1_score } = response;
+              $("#captionResult").html(`
+                <h4>Generated Answer:</h4>
+                <p>${generated_caption}</p>
+                <h4>Reference Answer:</h4>
+                <p>${reference_answer || "N/A"}</p>
+                <h4>Metrics:</h4>
+                <ul class="metrics-list">
+                    <li>Levenshtein Similarity: ${lev_similarity.toFixed(4)}</li>
+                    <li>Cosine Similarity: ${cosine_similarity.toFixed(4)}</li>
+                    <li>Precision: ${precision.toFixed(4)}</li>
+                    <li>Recall: ${recall.toFixed(4)}</li>
+                    <li>F1 Score: ${f1_score.toFixed(4)}</li>
+                </ul>
+              `);
+            },
+            error: function () {
+              $("#captionResult").html('<p class="text-danger">Error processing your request.</p>');
+            },
+          });
+        });
+
+      // QA feedback
+      $("#feedbackForm").on("submit", function (e) {
+        e.preventDefault();
+        const correctedAnswer = $("#correctedAnswer").val();
+        const question = $("#query").val();
+        $.ajax({
+          url: "/feedback",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            task_type: "qa",
+            user_input: question,
+            model_output: $("#queryResult").find("p").eq(0).text(),
+            corrected_output: correctedAnswer,
+          }),
+          success: function (response) {
+            alert(response.message);
+          },
+          error: function () {
+            alert("Error saving feedback.");
+          },
+        });
+      });
+
+      // Retrain
+      $("#retrainButton").on("click", function () {
+        $.ajax({
+          url: "/retrain",
+          type: "POST",
+          success: function (response) {
+            alert(response.message);
+          },
+          error: function () {
+            alert("Error initiating model retraining.");
+          },
+        });
+      });
+    });
+  </script>
+</body>
+</html>

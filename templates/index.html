@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Task Selection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .task-selection {
+            margin-bottom: 20px;
+        }
+        .task-selection label {
+            margin-right: 20px;
+            cursor: pointer;
+        }
+        .form-section {
+            display: none;
+            margin-top: 20px;
+        }
+        .result {
+            display: none;
+            margin-top: 20px;
+        }
+        .feedback-section {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Choose Your Task</h1>
+    
+    <div class="task-selection">
+        <label>
+            <input type="radio" name="task" value="qa" onclick="toggleForm('qa')"> Question Answering
+        </label>
+        <label>
+            <input type="radio" name="task" value="image_captioning" onclick="toggleForm('image_captioning')"> Image Captioning
+        </label>
+    </div>
+
+    <!-- Question Answering Form -->
+    <div class="form-section" id="qa-form">
+        <h2>Submit Your Question</h2>
+        <textarea id="qa-question" placeholder="Enter your question..." rows="4" style="width: 100%"></textarea>
+        <button onclick="submitQuestion()">Submit</button>
+    </div>
+
+    <!-- Image Captioning Form -->
+    <div class="form-section" id="image-captioning-form">
+        <h2>Upload an Image</h2>
+        <input type="file" id="image-input" accept="image/*">
+        <button onclick="submitImage()">Submit</button>
+    </div>
+
+    <!-- Results Section -->
+    <div class="result" id="result">
+        <h2>Results</h2>
+        <div id="generated-output"></div>
+        <div id="reference-output"></div>
+        <div id="metrics"></div>
+    </div>
+
+    <!-- Feedback Form -->
+    <div class="feedback-section">
+        <h3>Provide Feedback</h3>
+        <textarea id="feedback" placeholder="Enter your feedback here..." rows="4" style="width: 100%"></textarea><br>
+        <button onclick="submitFeedback()">Submit Feedback</button>
+    </div>
+</div>
+
+<script>
+    function toggleForm(task) {
+        document.getElementById('qa-form').style.display = task === 'qa' ? 'block' : 'none';
+        document.getElementById('image-captioning-form').style.display = task === 'image_captioning' ? 'block' : 'none';
+        document.getElementById('result').style.display = 'none'; // Hide result section when changing task
+        document.getElementById('feedback').value = ''; // Clear feedback section
+    }
+
+    function submitQuestion() {
+        const question = document.getElementById('qa-question').value;
+        fetch('/query', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: question
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('generated-output').innerText = "Generated Answer: " + data.generated_answer;
+            document.getElementById('reference-output').innerText = "Reference Answer: " + data.reference_answer;
+            document.getElementById('metrics').innerHTML = `
+                <strong>Metrics:</strong><br>
+                Levenshtein Similarity: ${data.lev_similarity}<br>
+                Cosine Similarity: ${data.cosine_similarity}<br>
+                Precision: ${data.precision}<br>
+                Recall: ${data.recall}<br>
+                F1 Score: ${data.f1_score}
+            `;
+        });
+    }
+
+    function submitImage() {
+        const imageInput = document.getElementById('image-input');
+        const formData = new FormData();
+        formData.append("image", imageInput.files[0]);
+        
+        fetch('/caption', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('generated-output').innerText = "Generated Caption: " + data.generated_caption;
+            document.getElementById('reference-output').innerText = "Reference Caption: " + data.reference_answer;
+            document.getElementById('metrics').innerHTML = `
+                <strong>Metrics:</strong><br>
+                Levenshtein Similarity: ${data.lev_similarity}<br>
+                Cosine Similarity: ${data.cosine_similarity}<br>
+                Precision: ${data.precision}<br>
+                Recall: ${data.recall}<br>
+                F1 Score: ${data.f1_score}
+            `;
+        });
+    }
+
+    function submitFeedback() {
+        const taskType = document.querySelector('input[name="task"]:checked').value;
+        const userInput = taskType === 'qa' ? document.getElementById('qa-question').value : document.getElementById('image-input').files[0].name;
+        const modelOutput = taskType === 'qa' ? document.getElementById('generated-output').innerText : document.getElementById('generated-output').innerText;
+        const correctedOutput = document.getElementById('feedback').value;
+
+        fetch('/feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                task_type: taskType,
+                user_input: userInput,
+                model_output: modelOutput,
+                corrected_output: correctedOutput
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert("Feedback submitted successfully!");
+        })
+        .catch(error => {
+            alert("Error submitting feedback!");
+        });
+    }
+</script>
+
+</body>
+</html>

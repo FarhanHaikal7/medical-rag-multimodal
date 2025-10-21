@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Query AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .loader {
+            border-top-color: #8b5cf6;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .metric-bar {
+            transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl min-h-screen">
+
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <div class="inline-block bg-purple-100 text-purple-600 p-4 rounded-full mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain-circuit"><path d="M12 5a3 3 0 1 0-5.993 1.004M12 5a3 3 0 1 1 5.993 1.004M17.5 12a3 3 0 1 0-5.993 1.004M17.5 12a3 3 0 1 1 5.993 1.004M6.5 12a3 3 0 1 0-5.993 1.004M6.5 12a3 3 0 1 1 5.993 1.004M12 19a3 3 0 1 0-5.993 1.004M12 19a3 3 0 1 1 5.993 1.004"/><path d="M12 5v0a2.99 2.99 0 0 1 2.592 1.502"/><path d="M14.592 6.502A2.99 2.99 0 0 1 17.5 9.004"/><path d="M17.5 9v0a2.99 2.99 0 0 1-2.592 1.502"/><path d="M14.908 10.502A2.99 2.99 0 0 1 12 13.004"/><path d="M12 13v0a2.99 2.99 0 0 1-2.592 1.502"/><path d="M9.408 14.502A2.99 2.99 0 0 1 6.5 17.004"/><path d="M6.5 17v0a2.99 2.99 0 0 1 2.592 1.502"/><path d="M9.08 18.502A2.99 2.99 0 0 1 12 21.004"/><path d="M12 13a2.99 2.99 0 0 0 2.592-1.502"/><path d="M14.592 11.498A2.99 2.99 0 0 0 17.5 9"/><path d="M17.5 9a2.99 2.99 0 0 0-2.592-1.502"/><path d="M14.908 7.498A2.99 2.99 0 0 0 12 5"/><path d="M12 5a2.99 2.99 0 0 0-2.592 1.502"/><path d="M9.408 6.502A2.99 2.99 0 0 0 6.5 9"/><path d="M6.5 9a2.99 2.99 0 0 0 2.592 1.502"/><path d="M9.08 10.502A2.99 2.99 0 0 0 12 13"/><path d="M12 19a2.99 2.99 0 0 0-2.592-1.502"/><path d="M9.408 17.498A2.99 2.99 0 0 0 6.5 15"/><path d="M6.5 15a2.99 2.99 0 0 0 2.592-1.502"/><path d="M9.08 13.498A2.99 2.99 0 0 0 12 11"/><path d="M12 11a2.99 2.99 0 0 1 2.592-1.502"/><path d="M14.592 9.498A2.99 2.99 0 0 1 17.5 12"/><path d="M17.5 12a2.99 2.99 0 0 1-2.592 1.502"/><path d="M14.908 13.502A2.99 2.99 0 0 1 12 16"/><path d="M12 16a2.99 2.99 0 0 0-2.592 1.502"/><path d="M9.408 17.502A2.99 2.99 0 0 0 6.5 20"/><path d="M6.5 20a2.99 2.99 0 0 1 2.592-1.502"/><path d="M9.08 18.498A2.99 2.99 0 0 1 12 16"/></svg>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Medical Query AI</h1>
+            <p class="text-gray-600 mt-3 max-w-2xl mx-auto">An intelligent assistant leveraging Retrieval-Augmented Generation and GPT-2 to provide insightful answers to your medical questions.</p>
+        </header>
+
+        <!-- Query Form -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg mb-8 border border-gray-200">
+            <form id="query-form">
+                <label for="query-text" class="block text-lg font-semibold text-gray-800 mb-3">Enter your medical question:</label>
+                <textarea id="query-text" name="query" rows="4" class="w-full p-4 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-300" placeholder="e.g., What are the long-term effects of high blood pressure?"></textarea>
+                <button type="submit" class="mt-4 w-full flex items-center justify-center gap-2 bg-purple-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-transform transform hover:scale-[1.02]">
+                    <i data-lucide="search"></i>
+                    <span>Get Answer</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loader" class="hidden flex justify-center items-center my-12">
+            <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-24 w-24"></div>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="error-message" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg relative mb-6" role="alert">
+            <div class="flex">
+                <div class="py-1"><i data-lucide="alert-triangle" class="h-6 w-6 text-red-500 mr-4"></i></div>
+                <div>
+                    <p class="font-bold">An error occurred</p>
+                    <p id="error-text" class="text-sm"></p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Results Section -->
+        <div id="results-section" class="hidden space-y-8">
+            <!-- Original Question -->
+             <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 fade-in">
+                <h2 class="text-2xl font-bold text-gray-800 mb-3 flex items-center gap-3"><i data-lucide="help-circle" class="text-gray-500"></i>Your Question</h2>
+                <p id="result-question" class="text-gray-700 text-lg"></p>
+            </div>
+
+            <!-- Generated Answer -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 fade-in" style="animation-delay: 0.1s;">
+                <h2 class="text-2xl font-bold text-purple-800 mb-3 flex items-center gap-3"><i data-lucide="sparkles" class="text-purple-500"></i>AI Generated Answer</h2>
+                <p id="generated-answer" class="text-gray-700 leading-relaxed text-lg"></p>
+            </div>
+
+            <!-- Reference Answer -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 fade-in" style="animation-delay: 0.2s;">
+                <h2 class="text-2xl font-bold text-green-800 mb-3 flex items-center gap-3"><i data-lucide="book-check" class="text-green-500"></i>Reference Answer</h2>
+                <p id="reference-answer" class="text-gray-700 leading-relaxed text-lg"></p>
+            </div>
+
+            <!-- Evaluation Metrics -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 fade-in" style="animation-delay: 0.3s;">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3"><i data-lucide="bar-chart-2" class="text-gray-500"></i>Evaluation Metrics</h2>
+                <div id="metrics-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Metrics will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const form = document.getElementById('query-form');
+        const queryText = document.getElementById('query-text');
+        const loader = document.getElementById('loader');
+        const resultsSection = document.getElementById('results-section');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = queryText.value.trim();
+
+            if (!query) {
+                showError('Please enter a question to proceed.');
+                return;
+            }
+
+            resultsSection.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            loader.classList.remove('hidden');
+            form.querySelector('button').disabled = true;
+
+
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `An unexpected error occurred. Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showError(error.message);
+            } finally {
+                loader.classList.add('hidden');
+                form.querySelector('button').disabled = false;
+            }
+        });
+
+        function displayResults(data) {
+            document.getElementById('result-question').textContent = data.question;
+            document.getElementById('generated-answer').textContent = data.generated_answer;
+            document.getElementById('reference-answer').textContent = data.reference_answer;
+            
+            const metrics = {
+                'Cosine Similarity': data.cosine_similarity,
+                'BERTScore F1': data.f1_score,
+                'BERTScore Precision': data.precision,
+                'BERTScore Recall': data.recall,
+                'Levenshtein Similarity': data.lev_similarity
+            };
+
+            const metricsContainer = document.getElementById('metrics-container');
+            metricsContainer.innerHTML = ''; 
+
+            const colors = {
+                'Cosine Similarity': 'bg-teal-500',
+                'BERTScore F1': 'bg-purple-500',
+                'BERTScore Precision': 'bg-indigo-500',
+                'BERTScore Recall': 'bg-pink-500',
+                'Levenshtein Similarity': 'bg-rose-500'
+            }
+
+            for (const [name, value] of Object.entries(metrics)) {
+                const percentage = (value * 100).toFixed(2);
+                const colorClass = colors[name] || 'bg-purple-600';
+                const metricEl = document.createElement('div');
+                metricEl.classList.add('p-4', 'rounded-xl', 'bg-gray-50', 'border');
+                metricEl.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-semibold text-gray-700">${name}</h3>
+                        <span class="font-bold text-lg ${colorClass.replace('bg-', 'text-')}">${percentage}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div class="${colorClass} h-3 rounded-full metric-bar" style="width: 0%"></div>
+                    </div>
+                `;
+                metricsContainer.appendChild(metricEl);
+                // Animate the bar width after a short delay
+                setTimeout(() => {
+                    metricEl.querySelector('.metric-bar').style.width = `${percentage}%`;
+                }, 100);
+            }
+
+
+            resultsSection.classList.remove('hidden');
+        }
+        
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
+
+
